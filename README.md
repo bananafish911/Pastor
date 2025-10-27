@@ -1,4 +1,6 @@
-<img width="512" height="512" alt="appstore1024" src="https://github.com/user-attachments/assets/df25ad2f-e82d-4cc4-9703-6d3284502843" />
+<img width="128" height="128" alt="appicon" src="https://github.com/user-attachments/assets/df25ad2f-e82d-4cc4-9703-6d3284502843" />
+
+
 # 🧠 Pastor — A Private Clipboard Manager for macOS
 
 **Pastor** is a simple, open-source, text-only clipboard manager for macOS, built with **SwiftUI**.  
