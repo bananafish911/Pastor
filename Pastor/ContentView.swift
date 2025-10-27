@@ -72,6 +72,9 @@ struct ContentView: View {
             .buttonStyle(.borderedProminent)
         }
         .padding()
+        .onDisappear {
+            searchText = ""
+        }
     }
 }
 

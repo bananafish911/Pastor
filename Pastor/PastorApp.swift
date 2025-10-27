@@ -7,13 +7,6 @@
 
 import SwiftUI
 
-// TODO: - utility app clipboard manager
-
-/*
- truly air-gapped
- simple: store X items, copy by click
- */
-
 @main
 struct MenuBarApp: App {
     @StateObject private var watcher = ClipboardWatcher()
@@ -24,7 +17,6 @@ struct MenuBarApp: App {
                 .environmentObject(watcher)
         }
         .menuBarExtraStyle(.window)
-//        .menuBarExtraStyle(.menu)
         
         Settings {
             SettingsView()
