@@ -11,7 +11,6 @@ import AppKit
 struct ContentView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var watcher: ClipboardWatcher
-    @State private var showClearConfirmation = false
     @State private var searchText: String = ""
     
     var filteredItems: [String] {
@@ -24,38 +23,46 @@ struct ContentView: View {
     
     var body: some View {
         VStack {
-            SearchField(text: $searchText)
-            VStack(alignment: .leading, spacing: 1) {
-                ForEach(filteredItems, id: \.self) { item in
-                    let textLimit: Int = 64
-                    HoverButton(text: item.trimmingLeadingWhitespaceAndNewlines(),
-                                textLimit: textLimit,
-                                onDelete: {
-                        watcher.removeItem(item)
-                        print(item)
-                    }, onTap: {
-                        NSPasteboard.general.clearContents()
-                        NSPasteboard.general.setString(item, forType: .string)
-                        searchText = ""
-                        dismiss()
-                    })
-                    .lineLimit(1)
-                    .help(item.count > textLimit ? item : "")
+            ScrollView(.vertical) {
+                if watcher.items.count > 10 {
+                    SearchField(text: $searchText)
+                }
+                if watcher.items.isEmpty {
+                    Label("Items will appear here…", systemImage: "sparkles")
+                }
+                VStack(alignment: .leading, spacing: 1) {
+                    ForEach(filteredItems, id: \.self) { item in
+                        let textLimit: Int = 64
+                        HoverButton(text: item.trimmingLeadingWhitespaceAndNewlines(),
+                                    textLimit: textLimit,
+                                    onDelete: {
+                            watcher.removeItem(item)
+                            print(item)
+                        }, onTap: {
+                            NSPasteboard.general.clearContents()
+                            NSPasteboard.general.setString(item, forType: .string)
+                            searchText = ""
+                            dismiss()
+                        })
+                        .lineLimit(1)
+                        .help(item.count > textLimit ? item : "")
+                    }
                 }
             }
             Divider()
             if watcher.items.count > 0 {
                 Button("Clear all") {
-                    showClearConfirmation = true
-                }
-                .buttonStyle(.borderless)
-                .confirmationDialog("Are you sure you want to clear all clipboard items?",
-                                    isPresented: $showClearConfirmation) {
-                    Button("Clear All", role: .destructive) {
+                    let alert = NSAlert()
+                    alert.messageText = "Are you sure you want to clear all clipboard items?"
+                    alert.addButton(withTitle: "Clear All")
+                    alert.addButton(withTitle: "Cancel")
+                    alert.alertStyle = .warning
+                    
+                    if alert.runModal() == .alertFirstButtonReturn {
                         watcher.clearItems()
                     }
-                    Button("Cancel", role: .cancel) { }
                 }
+                .buttonStyle(.borderless)
             }
             Button(watcher.isRunning ? "Pause" : "Resume") {
                 watcher.isRunning ? watcher.stopMonitoring() : watcher.startMonitoring()

@@ -15,6 +15,7 @@ struct MenuBarApp: App {
         MenuBarExtra("My Utility", image: "MenuBarIcon") {
             ContentView()
                 .environmentObject(watcher)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .menuBarExtraStyle(.window)
         

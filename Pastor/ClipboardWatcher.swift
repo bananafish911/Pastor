@@ -11,7 +11,11 @@ import SwiftUI
 import CryptoKit
 
 final class ClipboardWatcher: ObservableObject {
-    private let storage = SecureStorage(fileName: "clipboardfile", keychainKey: "com.pastor.encryptionKey")
+#if DEBUG
+    lazy var storage = SecureStorage(fileName: "clipboardfileDebug", keychainKey: "com.pastor.encryptionKeyDebug")
+#else
+    lazy var storage = SecureStorage(fileName: "clipboardfile", keychainKey: "com.pastor.encryptionKey")
+#endif
     @Published var items: [String] = [] {
         didSet {
             saveData()
@@ -82,6 +86,9 @@ final class ClipboardWatcher: ObservableObject {
     // MARK: - Persistence
     
     private func saveData() {
+#if DEBUG
+        return // skip for debug mode
+#endif
         do {
             try storage.saveStrings(items)
         } catch {
@@ -90,6 +97,12 @@ final class ClipboardWatcher: ObservableObject {
     }
     
     private func loadData() {
+#if DEBUG
+        for _ in 0..<10 {
+            items.append("Test \(Int.random(in: 0..<1000))")
+        }
+        return // skip for debug mode
+#endif
         do {
             items = try storage.loadStrings()
         } catch {
