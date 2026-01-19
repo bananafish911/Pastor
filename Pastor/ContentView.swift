@@ -52,15 +52,7 @@ struct ContentView: View {
             Divider()
             if watcher.items.count > 0 {
                 Button("Clear all") {
-                    let alert = NSAlert()
-                    alert.messageText = "Are you sure you want to clear all clipboard items?"
-                    alert.addButton(withTitle: "Clear All")
-                    alert.addButton(withTitle: "Cancel")
-                    alert.alertStyle = .warning
-                    
-                    if alert.runModal() == .alertFirstButtonReturn {
-                        watcher.clearItems()
-                    }
+                    watcher.clearItems()
                 }
                 .buttonStyle(.borderless)
             }
