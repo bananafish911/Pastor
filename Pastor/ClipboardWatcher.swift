@@ -98,8 +98,8 @@ final class ClipboardWatcher: ObservableObject {
     
     private func loadData() {
 #if DEBUG
-        for _ in 0..<10 {
-            items.append("Test \(Int.random(in: 0..<1000))")
+        for _ in 0..<1500 {
+            items.append("Test \(UUID().uuidString.prefix(8))")
         }
         return // skip for debug mode
 #endif

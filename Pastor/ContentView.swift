@@ -30,7 +30,7 @@ struct ContentView: View {
                 if watcher.items.isEmpty {
                     Label("Items will appear here…", systemImage: "sparkles")
                 }
-                VStack(alignment: .leading, spacing: 1) {
+                LazyVStack(alignment: .leading, spacing: 1) {
                     ForEach(filteredItems, id: \.self) { item in
                         let textLimit: Int = 64
                         HoverButton(text: item.trimmingLeadingWhitespaceAndNewlines(),
@@ -173,3 +173,4 @@ struct SearchField: NSViewRepresentable {
         }
     }
 }
+
