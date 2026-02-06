@@ -34,9 +34,8 @@ final class SecureStorage {
     // MARK: - Encryption Key Management
     
     private func getOrCreateKey() throws -> SymmetricKey {
-        if let existingData = loadFromKeychain(key: keychainKey),
-           let key = try? SymmetricKey(data: existingData) {
-            return key
+        if let existingData = loadFromKeychain(key: keychainKey) {
+            return SymmetricKey(data: existingData)
         }
         
         // Create new random key

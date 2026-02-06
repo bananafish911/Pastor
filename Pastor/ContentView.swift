@@ -12,14 +12,9 @@ struct ContentView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var watcher: ClipboardWatcher
     @State private var searchText: String = ""
+    @State private var filteredItems: [ClipboardItem] = []
     
-    var filteredItems: [String] {
-        if searchText.isEmpty {
-            return watcher.items
-        } else {
-            return watcher.items.filter { $0.localizedCaseInsensitiveContains(searchText) }
-        }
-    }
+    private let textLimit: Int = 64
     
     var body: some View {
         VStack {
@@ -31,21 +26,21 @@ struct ContentView: View {
                     Label("Items will appear here…", systemImage: "sparkles")
                 }
                 LazyVStack(alignment: .leading, spacing: 1) {
-                    ForEach(filteredItems, id: \.self) { item in
-                        let textLimit: Int = 64
-                        HoverButton(text: item.trimmingLeadingWhitespaceAndNewlines(),
-                                    textLimit: textLimit,
-                                    onDelete: {
-                            watcher.removeItem(item)
-                            print(item)
-                        }, onTap: {
-                            NSPasteboard.general.clearContents()
-                            NSPasteboard.general.setString(item, forType: .string)
-                            searchText = ""
-                            dismiss()
-                        })
-                        .lineLimit(1)
-                        .help(item.count > textLimit ? item : "")
+                    ForEach(filteredItems) { item in
+                        HoverButton(
+                            displayText: item.displayText,
+                            fullText: item.fullText,
+                            hasMore: item.isTruncated,
+                            onDelete: {
+                                watcher.removeItem(item.fullText)
+                            },
+                            onTap: {
+                                NSPasteboard.general.clearContents()
+                                NSPasteboard.general.setString(item.fullText, forType: .string)
+                                searchText = ""
+                                dismiss()
+                            }
+                        )
                     }
                 }
             }
@@ -74,6 +69,61 @@ struct ContentView: View {
         .onDisappear {
             searchText = ""
         }
+        .task(id: watcher.items) {
+            updateFilteredItems()
+        }
+        .onChange(of: searchText) { _, _ in
+            updateFilteredItems()
+        }
+    }
+    
+    private func updateFilteredItems() {
+        let items = watcher.items
+        let search = searchText.lowercased()
+        
+        // Perform filtering and transformation off main thread for large datasets
+        if items.count > 500 {
+            Task.detached(priority: .userInitiated) {
+                let filtered = filterAndTransform(items: items, searchText: search)
+                await MainActor.run {
+                    self.filteredItems = filtered
+                }
+            }
+        } else {
+            filteredItems = filterAndTransform(items: items, searchText: search)
+        }
+    }
+    
+    private nonisolated func filterAndTransform(items: [String], searchText: String) -> [ClipboardItem] {
+        let filtered = searchText.isEmpty 
+            ? items 
+            : items.filter { $0.localizedCaseInsensitiveContains(searchText) }
+        
+        return filtered.enumerated().map { index, text in
+            ClipboardItem(
+                index: index,
+                fullText: text,
+                textLimit: textLimit
+            )
+        }
+    }
+}
+
+// MARK: - Models
+
+struct ClipboardItem: Identifiable {
+    let id: Int
+    let fullText: String
+    let displayText: String
+    let isTruncated: Bool
+    
+    init(index: Int, fullText: String, textLimit: Int) {
+        self.id = index
+        self.fullText = fullText
+        
+        let trimmed = fullText.trimmingLeadingWhitespaceAndNewlines()
+        self.isTruncated = trimmed.count > textLimit
+        self.displayText = String(trimmed.prefix(textLimit))
     }
 }
 
@@ -86,8 +136,9 @@ struct ContentView: View {
 // MARK: - Utils
 
 struct HoverButton: View {
-    let text: String
-    let textLimit: Int
+    let displayText: String
+    let fullText: String
+    let hasMore: Bool
     let onDelete: () -> Void
     let onTap: () -> Void
     
@@ -96,11 +147,10 @@ struct HoverButton: View {
     var body: some View {
         Button(action: onTap) {
             HStack {
-                Text(text.trimmingCharacters(in: .whitespacesAndNewlines)
-                    .prefix(textLimit))
-                .lineLimit(1)
-                .truncationMode(.tail)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                Text(displayText)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 
                 if isHovered {
                     Image(systemName: "xmark.circle.fill")
@@ -125,7 +175,8 @@ struct HoverButton: View {
         .onHover { hovering in
             isHovered = hovering
         }
-        .focusable(false)// Prevents default macOS blue highlight
+        .help(hasMore ? fullText : "")
+        .focusable(false) // Prevents default macOS blue highlight
     }
 }
 
