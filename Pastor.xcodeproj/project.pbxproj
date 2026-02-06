@@ -15,6 +15,7 @@
 		576851F62EAF917F00BF6877 /* SecureStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576851F52EAF917F00BF6877 /* SecureStorage.swift */; };
 		57BE961E2F3631AF0054954B /* ClipboardItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BE961D2F3631AF0054954B /* ClipboardItem.swift */; };
 		57BE96202F36320B0054954B /* MIGRATION_NOTES.md in Resources */ = {isa = PBXBuildFile; fileRef = 57BE961F2F36320B0054954B /* MIGRATION_NOTES.md */; };
+		57BE96222F3633870054954B /* LaunchAtLoginHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BE96212F3633870054954B /* LaunchAtLoginHelper.swift */; };
 		57E5354F2EA0343900207B9E /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E5354E2EA0343900207B9E /* Extensions.swift */; };
 /* End PBXBuildFile section */
 
@@ -29,6 +30,7 @@
 		576851F52EAF917F00BF6877 /* SecureStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureStorage.swift; sourceTree = "<group>"; };
 		57BE961D2F3631AF0054954B /* ClipboardItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardItem.swift; sourceTree = "<group>"; };
 		57BE961F2F36320B0054954B /* MIGRATION_NOTES.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = MIGRATION_NOTES.md; sourceTree = "<group>"; };
+		57BE96212F3633870054954B /* LaunchAtLoginHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginHelper.swift; sourceTree = "<group>"; };
 		57E5354E2EA0343900207B9E /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -72,6 +74,7 @@
 				5728F8562E9E820400665222 /* Pastor.entitlements */,
 				57BE961D2F3631AF0054954B /* ClipboardItem.swift */,
 				57BE961F2F36320B0054954B /* MIGRATION_NOTES.md */,
+				57BE96212F3633870054954B /* LaunchAtLoginHelper.swift */,
 			);
 			path = Pastor;
 			sourceTree = "<group>";
@@ -154,6 +157,7 @@
 				57E5354F2EA0343900207B9E /* Extensions.swift in Sources */,
 				5728F85A2E9E820400665222 /* ClipboardWatcher.swift in Sources */,
 				5728F85B2E9E820400665222 /* ContentView.swift in Sources */,
+				57BE96222F3633870054954B /* LaunchAtLoginHelper.swift in Sources */,
 				5728F85C2E9E820400665222 /* PastorApp.swift in Sources */,
 				5728F85D2E9E820400665222 /* SettingsView.swift in Sources */,
 			);
@@ -289,7 +293,7 @@
 				CODE_SIGN_ENTITLEMENTS = Pastor/Pastor.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSUIElement = YES;
@@ -317,7 +321,7 @@
 				CODE_SIGN_ENTITLEMENTS = Pastor/Pastor.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSUIElement = YES;
