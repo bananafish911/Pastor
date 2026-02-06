@@ -16,7 +16,7 @@ final class ClipboardWatcher: ObservableObject {
 #else
     lazy var storage = SecureStorage(fileName: "clipboardfile", keychainKey: "com.pastor.encryptionKey")
 #endif
-    @Published var items: [String] = [] {
+    @Published var items: [ClipboardItem] = [] {
         didSet {
             saveData()
         }
@@ -57,13 +57,17 @@ final class ClipboardWatcher: ObservableObject {
     }
     
     func addNewItem(_ text: String) {
-        if items.contains(text) {
-            // existing - move to the top
-            items.removeAll { $0 == text }
-            items.insert(text, at: 0)
+        // Check if content already exists
+        if let existingIndex = items.firstIndex(where: { $0.content == text }) {
+            // Move to top and increment access count
+            var item = items[existingIndex]
+            item.accessCount += 1
+            items.remove(at: existingIndex)
+            items.insert(item, at: 0)
         } else {
-            // new - insert and trim array
-            items.insert(text, at: 0)
+            // Create new item
+            let newItem = ClipboardItem(content: text)
+            items.insert(newItem, at: 0)
             if items.count > maxItems {
                 items = Array(items.prefix(maxItems))
             }
@@ -71,10 +75,8 @@ final class ClipboardWatcher: ObservableObject {
         saveData()
     }
     
-    func removeItem(_ text: String) {
-        if items.contains(text) {
-            items.removeAll { $0 == text }
-        }
+    func removeItem(_ item: ClipboardItem) {
+        items.removeAll { $0.id == item.id }
         saveData()
     }
     
@@ -90,23 +92,40 @@ final class ClipboardWatcher: ObservableObject {
         return // skip for debug mode
 #endif
         do {
-            try storage.saveStrings(items)
+            try storage.saveItems(items)
         } catch {
-            print("Error:", error)
+            print("Error saving items:", error)
         }
     }
     
     private func loadData() {
 #if DEBUG
-        for _ in 0..<1500 {
-            items.append("Test \(UUID().uuidString.prefix(8))")
+        for i in 0..<3500 {
+            items.append(ClipboardItem(
+                content: "Test \(UUID().uuidString.prefix(8))",
+                timestamp: Date().addingTimeInterval(TimeInterval(-i * 60))
+            ))
         }
         return // skip for debug mode
 #endif
         do {
-            items = try storage.loadStrings()
+            // Try loading new format first
+            items = try storage.loadItems()
         } catch {
-            print("Error:", error)
+            // Fall back to legacy string format for migration
+            do {
+                let oldStrings = try storage.loadStrings()
+                items = oldStrings.enumerated().map { index, content in
+                    ClipboardItem(
+                        content: content,
+                        timestamp: Date().addingTimeInterval(TimeInterval(-index * 60))
+                    )
+                }
+                // Save in new format
+                try storage.saveItems(items)
+            } catch {
+                print("Error loading items:", error)
+            }
         }
     }
     

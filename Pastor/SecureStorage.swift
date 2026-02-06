@@ -47,6 +47,34 @@ final class SecureStorage {
     
     // MARK: - Public API
     
+    func saveItems(_ items: [ClipboardItem]) throws {
+        let key = try getOrCreateKey()
+        
+        // Convert to JSON
+        let jsonData = try JSONEncoder().encode(items)
+        
+        // Encrypt
+        let sealedBox = try AES.GCM.seal(jsonData, using: key)
+        let combined = sealedBox.combined! // nonce + ciphertext + tag
+        
+        // Save to file
+        try combined.write(to: fileURL(), options: .atomic)
+    }
+    
+    func loadItems() throws -> [ClipboardItem] {
+        let key = try getOrCreateKey()
+        let encryptedData = try Data(contentsOf: fileURL())
+        
+        // Decrypt
+        let sealedBox = try AES.GCM.SealedBox(combined: encryptedData)
+        let decrypted = try AES.GCM.open(sealedBox, using: key)
+        let decoded = try JSONDecoder().decode([ClipboardItem].self, from: decrypted)
+        
+        return decoded
+    }
+    
+    // MARK: - Legacy String Support (for migration)
+    
     func saveStrings(_ strings: [String]) throws {
         let key = try getOrCreateKey()
         

@@ -12,7 +12,7 @@ struct ContentView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var watcher: ClipboardWatcher
     @State private var searchText: String = ""
-    @State private var filteredItems: [ClipboardItem] = []
+    @State private var filteredItems: [ClipboardItemViewModel] = []
     
     private let textLimit: Int = 64
     
@@ -26,17 +26,17 @@ struct ContentView: View {
                     Label("Items will appear here…", systemImage: "sparkles")
                 }
                 LazyVStack(alignment: .leading, spacing: 1) {
-                    ForEach(filteredItems) { item in
+                    ForEach(filteredItems) { viewModel in
                         HoverButton(
-                            displayText: item.displayText,
-                            fullText: item.fullText,
-                            hasMore: item.isTruncated,
+                            displayText: viewModel.displayText,
+                            fullText: viewModel.fullText,
+                            hasMore: viewModel.isTruncated,
                             onDelete: {
-                                watcher.removeItem(item.fullText)
+                                watcher.removeItem(viewModel.item)
                             },
                             onTap: {
                                 NSPasteboard.general.clearContents()
-                                NSPasteboard.general.setString(item.fullText, forType: .string)
+                                NSPasteboard.general.setString(viewModel.fullText, forType: .string)
                                 searchText = ""
                                 dismiss()
                             }
@@ -94,15 +94,14 @@ struct ContentView: View {
         }
     }
     
-    private nonisolated func filterAndTransform(items: [String], searchText: String) -> [ClipboardItem] {
+    private nonisolated func filterAndTransform(items: [ClipboardItem], searchText: String) -> [ClipboardItemViewModel] {
         let filtered = searchText.isEmpty 
             ? items 
-            : items.filter { $0.localizedCaseInsensitiveContains(searchText) }
+            : items.filter { $0.content.localizedCaseInsensitiveContains(searchText) }
         
-        return filtered.enumerated().map { index, text in
-            ClipboardItem(
-                index: index,
-                fullText: text,
+        return filtered.map { item in
+            ClipboardItemViewModel(
+                item: item,
                 textLimit: textLimit
             )
         }
@@ -111,17 +110,19 @@ struct ContentView: View {
 
 // MARK: - Models
 
-struct ClipboardItem: Identifiable {
-    let id: Int
+struct ClipboardItemViewModel: Identifiable {
+    let id: UUID
+    let item: ClipboardItem
     let fullText: String
     let displayText: String
     let isTruncated: Bool
     
-    init(index: Int, fullText: String, textLimit: Int) {
-        self.id = index
-        self.fullText = fullText
+    init(item: ClipboardItem, textLimit: Int) {
+        self.id = item.id
+        self.item = item
+        self.fullText = item.content
         
-        let trimmed = fullText.trimmingLeadingWhitespaceAndNewlines()
+        let trimmed = item.content.trimmingLeadingWhitespaceAndNewlines()
         self.isTruncated = trimmed.count > textLimit
         self.displayText = String(trimmed.prefix(textLimit))
     }
